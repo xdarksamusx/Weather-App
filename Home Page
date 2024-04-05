@@ -1,0 +1,192 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import styled, { css, createGlobalStyle } from "styled-components";
+
+import Navigation from "../../components/Navigation";
+
+const GlobalStyles = createGlobalStyle`
+h4, h5 {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+`;
+
+const HomeContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+`;
+
+const Img = styled.img`
+width: 40px;,
+height: 40px;
+`;
+
+const FlexContainer = styled.div`
+  display: flex;
+  gap: 5px;
+  align-items: center;
+`;
+
+const FlagContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #dbdbe0;
+
+  width: 75px;
+  height: 75px;
+`;
+
+const Flag = styled.img`
+  width: 77%;
+  height: 77%;
+`;
+
+const Location = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Home = ({
+  homeCity,
+  setHomeCity,
+  city,
+  setCity,
+  isLoading,
+  setIsLoading,
+  setShowForecast
+
+}) => {
+  const [error, setError] = useState(false);
+  const getCityData = async (city) => {
+    try {
+           
+
+
+      const { data } = await axios(
+        `https://api.openweathermap.org/geo/1.0/direct?q=${homeCity.cityName}&limit=22&appid=8fb9b229cd6e177ca761ee2c0dc897bd`
+      );
+
+      return data;
+    } catch (err) {
+      setError(true);
+     }
+  };
+
+  const handleClick = async () => {
+    setIsLoading(true);
+
+    const data = await getCityData(homeCity.cityName);
+    const countryData = data[0];
+    const { country: countryCode, lat, lon, name: city } = countryData;
+
+    const { data: cityData } = await axios(
+      `https://api.weatherapi.com/v1/forecast.json?key=37b4b703a5214a40922193558242403&q=${city}&days=1&aqi=no&alerts=no`
+    );
+
+    const { data: nationData } = await axios(
+      `https://api.weatherapi.com/v1/forecast.json?key=37b4b703a5214a40922193558242403&q=${city}&days=1&aqi=no&alerts=no `
+    );
+
+    const { location } = nationData;
+    const { country: locationCountry } = location;
+
+    const { current, forecast } = cityData;
+
+    const {
+      temp_c: currentTemperature,
+      humidity,
+      wind_kph,
+      wind_dir,
+      cloud,
+      feelslike_c: feelsLike,
+      condition: { text: currentWeather, icon }
+    } = current;
+
+    const iconURL = icon.replace(/^\/\//, "");
+
+    const { forecastday } = forecast;
+    const firstForecastDay = forecastday[0];
+    const {
+      day: {
+        maxtemp_c: maxTemperature,
+        mintemp_c: minTemperature,
+        daily_chance_of_rain: chanceOfRain
+      }
+    } = firstForecastDay;
+
+    const { data: WeatherData } = await axios(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=a89112c29bec05c87322200965c25ce8`
+    );
+
+    const { weather } = WeatherData;
+    const { description } = weather[0];
+
+    const url = `https://api.unsplash.com/search/photos/?client_id=joucbPEBZJfn67xKNuy6u7vbHqWgUL74vCyo2kbLQRk&count=1&query=${description}+${currentWeather}`;
+    const { data: urlData } = await axios(url);
+    const { results } = urlData;
+    const { urls } = results[0];
+    const { regular: regularURL } = urls;
+    const { urls: secondaryURLs } = results[1];
+    const { regular: secondaryUrl } = urls;
+
+    setCity({
+      ...city,
+      cityName: city,
+      countryCode: countryCode,
+      currentTemperature: currentTemperature,
+      humidity: humidity,
+      max_Temperature: maxTemperature,
+      min_Temperature: minTemperature,
+      clouds: cloud,
+      feels_Like: feelsLike,
+      chanceOfRain: chanceOfRain,
+      currentWeather: currentWeather,
+      description: description,
+      iconURL: iconURL,
+      regularURL: regularURL,
+      secondaryUrl: secondaryUrl
+    });
+    setIsLoading(false);
+    setShowForecast(true)
+  };
+
+  useEffect(() => {
+    getCityData();
+  }, []);
+
+  return (
+    <>
+      <GlobalStyles />
+      <HomeContainer>
+        <Img src="https://cdn-icons-png.flaticon.com/512/3564/3564083.png" />
+        <FlexContainer>
+         { isLoading &&  <div> is fetching</div>}
+          {
+            <FlagContainer onClick={() => handleClick()}>
+              <img src={`https://flagsapi.com/MX/flat/64.png`} />
+            </FlagContainer>
+          }
+          <Location>
+            <h4>Current location</h4>
+            {/* <h5>{homeCity.cityName}</h5> */}
+          </Location>
+        </FlexContainer>
+      </HomeContainer>
+    </>
+  );
+};
+
+export default Home;
+
+
+ 
