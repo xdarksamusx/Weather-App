@@ -1,0 +1,111 @@
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import City from "./pages/City";
+import Navigation from "./components/Navigation";
+import styled, { css, createGlobalStyle } from "styled-components";
+import Forecast from "./components/Forecast";
+
+const Divder = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Container = styled.div`
+  display: flex;
+`;
+
+export default function App() {
+  const [updateWeatherData, setUpdateWeatherData] = useState(null)
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [inputValue, setInputValue] = useState("");
+
+  const [cities, setCities] = useState([]);
+
+   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [homeCity, setHomeCity] = useState({
+    cityName: "Mexico City",
+    countryCode: "MX"
+  });
+  const [city, setCity] = useState({});
+  const [showForecast, setShowForecast] = useState(false);
+
+  
+  const handleCityData = (cityData) => {
+    console.log('setting city object', cityData)
+        setCity(cityData)
+
+     
+  }
+
+  return (
+    <Container>
+      <Router>
+        <Divder>
+          <Switch>
+            <Route
+              exact
+              path="/"
+              render={(props) => (
+                <Home
+                  {...props}
+                  homeCity={homeCity}
+                  setHomeCity={setHomeCity}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                  city={city}
+                  setCity={setCity}
+                  setShowForecast={setShowForecast}
+                  updateWeatherData={updateWeatherData}
+                  setUpdateWeatherData={setUpdateWeatherData}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/city/:cityId"
+              render={(props) => (
+                <City
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                  inputValue={inputValue}
+                  setInputValue={setInputValue}
+                  city={city}
+                  setCity={setCity}
+                  cities={cities}
+                  setCities={setCities}
+                  formSubmitted={formSubmitted}
+                  setFormSubmited={setFormSubmitted}
+                  setShowForecast={setShowForecast}
+                  updateWeatherData={updateWeatherData} 
+                  // setUpdateWeatherData ={setUpdateWeatherData}
+                  // getWeatherData={getWeatherData}
+                  onCityData= {handleCityData}
+                />
+              )}
+            />
+          </Switch>
+          <Navigation
+            homeCity={homeCity}
+            setHomeCity={setHomeCity}
+            city={city}
+            setCity={setCity}
+            setShowForecast={setShowForecast}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            cities={cities}
+            setCities={setCities}
+            formSubmitted={formSubmitted}
+            setFormSubmited={setFormSubmitted}
+            showForecast={showForecast}
+            updateWeatherData={updateWeatherData} 
+            setUpdateWeatherData ={setUpdateWeatherData}
+ 
+          />
+        </Divder>
+      </Router>
+    </Container>
+  );
+}
+ 
